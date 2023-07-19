@@ -44,26 +44,26 @@ namespace SubRenamerMAUI.Models
         /// 匹配桥梁值
         /// </summary>
         public string MatchKey { get; set; }
-
+        public string MatchKeyView { get { return MatchKey; } }
         /// <summary>
         /// 视频文件 FullName
         /// </summary>
         public string Video { get; set; }
-
+        public string VideoView { get { return VideoFileInfo == null ? "" : VideoFileInfo.Name; } }
         public FileInfo VideoFileInfo => (!string.IsNullOrWhiteSpace(Video)) ? new FileInfo(Video) : null;
 
         /// <summary>
         /// 字幕文件 FullName
         /// </summary>
         public string Sub { get; set; }
-
+        public string SubView { get { return SubFileInfo == null ? "" : SubFileInfo.Name; } }
         public FileInfo SubFileInfo => (!string.IsNullOrWhiteSpace(Sub)) ? new FileInfo(Sub) : null;
 
         /// <summary>
         /// 当前状态
         /// </summary>
         public VsStatus Status { get; set; } = VsStatus.Unmatched;
-
+        public string StatusView { get { return GetStatusStr(); } }
         public string GetStatusStr()
         {
             var rm = StringResource.ResourceManager;

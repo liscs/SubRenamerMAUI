@@ -14,21 +14,21 @@
 
         <ListView x:Name="MainLV">
             <ListView.Header>
-                <FlexLayout Wrap="Wrap" >
-                    <Label  FlexLayout.Basis="5%"  Text="{x:Static lang:StringResource.col_matchkey}"/>
-                    <Label  FlexLayout.Basis="45%" Text="{x:Static lang:StringResource.col_sub}"/>
-                    <Label  FlexLayout.Basis="45%"  Text="{x:Static lang:StringResource.col_video}"/>
-                    <Label  FlexLayout.Basis="5%" Text="{x:Static lang:StringResource.col_status}"/>
+                <FlexLayout Wrap="Wrap"  >
+                    <Label FlexLayout.AlignSelf="Center" FlexLayout.Basis="5%" Margin="0,0,5,0"  Text="{x:Static lang:StringResource.col_matchkey}"/>
+                    <Label FlexLayout.AlignSelf="Center" FlexLayout.Basis="45%" Margin="0,0,5,0" Text="{x:Static lang:StringResource.col_sub}"/>
+                    <Label  FlexLayout.AlignSelf="Center" FlexLayout.Basis="45%"  Margin="0,0,5,0" Text="{x:Static lang:StringResource.col_video}"/>
+                    <Label FlexLayout.AlignSelf="Center" FlexLayout.Basis="5%" Margin="0,0,0,0" Text="{x:Static lang:StringResource.col_status}"/>
                 </FlexLayout>
             </ListView.Header>
             <ListView.ItemTemplate >
                 <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="model:VsItem">
                     <ViewCell>
-                        <FlexLayout Wrap="Wrap" >
-                            <Label  FlexLayout.Basis="5%"  Text="{Binding MatchKey}"/>
-                            <Label  FlexLayout.Basis="45%" Text="{Binding SubFileInfo.Name}"/>
-                            <Label  FlexLayout.Basis="Auto"  Text="{Binding VideoFileInfo.Name}"/>
-                            <Label  FlexLayout.Basis="5%" Text="{Binding Status}"/>
+                        <FlexLayout Wrap="Wrap">
+                            <Label  FlexLayout.AlignSelf="Center" FlexLayout.Basis="5%" Margin="0,0,5,0"  Text="{Binding MatchKeyView}"/>
+                            <Label FlexLayout.AlignSelf="Center" FlexLayout.Basis="45%" Margin="0,0,5,0" Text="{Binding SubView}"/>
+                            <Label FlexLayout.AlignSelf="Center" FlexLayout.Basis="45%" Margin="0,0,5,0" Text="{Binding VideoView}"/>
+                            <Label FlexLayout.AlignSelf="Center" FlexLayout.Basis="5%" Margin="0,0,0,0" Text="{Binding StatusView}"/>
                         </FlexLayout>
                     </ViewCell>
                 </DataTemplate>

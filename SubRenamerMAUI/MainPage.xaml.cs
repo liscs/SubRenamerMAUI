@@ -1,7 +1,8 @@
 ﻿using CommunityToolkit.Maui.Storage;
-using Microsoft.Maui.Layouts;
+using CommunityToolkit.Maui.Views;
 using SubRenamerMAUI.Models;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using static SubRenamerMAUI.Models.Global;
 
@@ -12,62 +13,7 @@ public partial class MainPage : ContentPage
 
     public MainPage()
     {
-
         InitializeComponent();
-        //InitPage();
-    }
-
-    private void InitPage()
-    {
-
-
-        MainLV = new ListView
-        {
-            ItemsSource = VsList,
-
-            ItemTemplate = new DataTemplate(() =>
-            {
-                // Create views with bindings for displaying each property.
-                Label matchKeyLabel = new Label();
-                matchKeyLabel.SetBinding(Label.TextProperty, "MatchKey");
-
-                Label subLabel = new Label();
-                subLabel.SetBinding(Label.TextProperty, "SubFileInfo.Name");
-
-                Label videoLabel = new Label();
-                videoLabel.SetBinding(Label.TextProperty, "VideoFileInfo.Name");
-
-                Label statusLabel = new Label();
-                statusLabel.SetBinding(Label.TextProperty, "Status");
-
-                FlexLayout.SetBasis(matchKeyLabel, new FlexBasis(0.1f, true));
-                FlexLayout.SetBasis(subLabel, new FlexBasis(0.4f, true));
-                FlexLayout.SetBasis(videoLabel, new FlexBasis(0.4f, true));
-                FlexLayout.SetBasis(statusLabel, new FlexBasis(0.1f, true));
-
-                // Return an assembled ViewCell.
-                return new ViewCell
-                {
-                    View = new FlexLayout
-                    {
-
-                        VerticalOptions = LayoutOptions.Center,
-                        Children =
-                                        {
-                                            matchKeyLabel,
-                                            subLabel,
-                                            videoLabel,
-                                            statusLabel
-                                        }
-                    }
-
-                };
-            })
-        };
-
-        MainGrid.Clear();
-        MainGrid.Add(MainLV);
-        MainGrid.Add(MainVSL);
     }
 
     private async Task Open_FolderAsync()
@@ -125,17 +71,6 @@ public partial class MainPage : ContentPage
     {
         _ = Open_FolderAsync();
     }
-
-    private void Start_Clicked(object sender, EventArgs e)
-    {
-        var vsItem = new VsItem();
-        vsItem.MatchKey = "匹";
-        vsItem.Sub = "幕";
-        vsItem.Video = "频";
-        vsItem.Status = VsStatus.Unmatched;
-        VsList.Add(vsItem);
-    }
-
 
     private void TryHandleVsListMatch(AppFileType FileType)
     {
@@ -352,6 +287,119 @@ public partial class MainPage : ContentPage
     private void Clear_List_Clicked(object sender, EventArgs e)
     {
         VsList.Clear();
+
+    }
+
+    private void Start_Clicked(object sender, EventArgs e)
+    {
+        var subRenameDict = GetSubRenameDict();
+        if (subRenameDict.Count() <= 0) return;
+        Task.Factory.StartNew(() => _StartRename(subRenameDict));
+    }
+    // 获取修改的字幕文件名 (原始完整路径->修改后完整路径)
+    private Dictionary<string, string> GetSubRenameDict()
+    {
+        var dict = new Dictionary<string, string>() { };
+        if (VsList.Count <= 0)
+            return dict;
+        foreach (var item in VsList)
+        {
+            if (item.Video == null || item.Sub == null) continue;
+
+            string videoName = Path.GetFileNameWithoutExtension(item.VideoFileInfo.Name); // 去掉后缀的视频文件名
+            string subAfterFilename = videoName + item.SubFileInfo.Extension; // 修改的字幕文件名
+            dict[item.SubFileInfo.FullName] = Path.Combine(item.VideoFileInfo.DirectoryName, subAfterFilename);
+
+        }
+        return dict;
+    }
+    /// 执行改名操作
+    private void _StartRename(Dictionary<string, string> subRenameDict)
+    {
+        try
+        {
+            foreach (var subRename in subRenameDict)
+            {
+                _RenameOnce(subRename);
+            }
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                await DisplayAlert("成功", "改名成功！", "确定");
+            });
+
+        }
+        catch (Exception e)
+        {
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                await DisplayAlert("失败", e.Message, "确定");
+            });
+        }
+
+    }
+
+    private void _RenameOnce(KeyValuePair<string, string> subRename)
+    {
+        var vsFile = VsList.Where(o => o.Sub == subRename.Key).ElementAt(0);
+        if (vsFile == null) throw new Exception("找不到修改项");
+        if (vsFile.Status == VsStatus.Done) return; // 无需再改名了
+        if (vsFile.Status != VsStatus.Ready && vsFile.Status != VsStatus.Fatal) throw new Exception("当前状态无法修改");
+        if (vsFile.Video == null || vsFile.Sub == null) throw new Exception("字幕/视频文件不完整");
+
+        var before = new FileInfo(subRename.Key);
+        var after = new FileInfo(subRename.Value);
+
+        // 若无需修改
+        if (before.FullName.Equals(after.FullName))
+        {
+            vsFile.Status = VsStatus.Done;
+            throw new Exception($"文件{vsFile.SubFileInfo.Name}未修改，因为改名后的文件已存在，无需改名");
+        }
+
+        // 若原文件不存在
+        if (!before.Exists)
+        {
+            vsFile.Status = VsStatus.Fatal;
+            throw new Exception("字幕源文件不存在");
+        }
+
+        // 执行备份
+        try
+        {
+            // 前字幕文件 和 后字幕文件 若是在同一个目录下
+            if (before.DirectoryName == after.DirectoryName && File.Exists(before.FullName))
+                BackupFile(before.FullName);
+
+            if (File.Exists(after.FullName))
+                BackupFile(after.FullName);
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"改名前备份发生错误 {e.GetType().FullName} {e.ToString()}");
+        }
+
+
+        // 执行更名
+        try
+        {
+            if (before.DirectoryName == after.DirectoryName)
+            {
+                if (File.Exists(after.FullName)) File.Delete(after.FullName); // 若后文件存在，则先删除 (上面有备份的)
+                File.Move(before.FullName, after.FullName); // 前后字幕相同目录，执行改名
+            }
+            else
+            {
+                File.Copy(before.FullName, after.FullName, true); // 前后字幕不同文件，执行复制
+            }
+
+            vsFile.Status = VsStatus.Done;
+        }
+        catch (Exception e)
+        {
+            // 更名失败
+            vsFile.Status = VsStatus.Fatal;
+            throw new Exception($"改名发生错误 {e.GetType().FullName} {e.ToString()}");
+        }
     }
 }
 

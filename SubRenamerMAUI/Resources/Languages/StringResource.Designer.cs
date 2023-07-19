@@ -81,7 +81,8 @@ namespace SubRenamerMAUI.Resources.Languages {
         /// <summary>
         ///   查找类似 开始重命名 的本地化字符串。
         /// </summary>
-        public static string btn_start {
+        public static string btn_start
+        {
             get {
                 return ResourceManager.GetString("btn_start", resourceCulture);
             }
