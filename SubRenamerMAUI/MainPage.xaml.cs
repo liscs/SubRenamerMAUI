@@ -375,7 +375,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception e)
         {
-            throw new Exception($"改名前备份发生错误 {e.GetType().FullName} {e.ToString()}");
+            throw new Exception($"改名前备份发生错误 {e.GetType().FullName} {e}");
         }
 
 
@@ -398,8 +398,22 @@ public partial class MainPage : ContentPage
         {
             // 更名失败
             vsFile.Status = VsStatus.Fatal;
-            throw new Exception($"改名发生错误 {e.GetType().FullName} {e.ToString()}");
+            throw new Exception($"改名发生错误 {e.GetType().FullName} {e}");
         }
+    }
+    private void BackupFile(string filename)
+    {
+        if (!File.Exists(filename)) return;
+        var bkFolder = Path.Combine(Path.GetDirectoryName(filename), "SubBackup/");
+        if (!Directory.Exists(bkFolder)) Directory.CreateDirectory(bkFolder);
+
+        string bkDistFile = Path.Combine(bkFolder, Path.GetFileName(filename));
+        if (File.Exists(bkDistFile)) // 解决文件重名问题
+            bkDistFile = Path.Combine(
+                bkFolder, Path.GetFileNameWithoutExtension(filename) + $".{DateTime.Now}{Path.GetExtension(filename)}"
+            );
+
+        File.Copy(filename, bkDistFile, true);
     }
 }
 
