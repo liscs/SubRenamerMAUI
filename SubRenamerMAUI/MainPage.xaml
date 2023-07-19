@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SubRenamerMAUI.MainPage"
+             xmlns:model="clr-namespace:SubRenamerMAUI.Models"
+             xmlns:local="clr-namespace:SubRenamerMAUI"
+             xmlns:lang="clr-namespace:SubRenamerMAUI.Resources.Languages">
+
+    <Grid x:Name="MainGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="8*" />
+            <ColumnDefinition Width="2*" />
+        </Grid.ColumnDefinitions>
+
+        <ListView x:Name="MainLV">
+            <ListView.Header>
+                <FlexLayout Wrap="Wrap" >
+                    <Label  FlexLayout.Basis="5%"  Text="{x:Static lang:StringResource.col_matchkey}"/>
+                    <Label  FlexLayout.Basis="45%" Text="{x:Static lang:StringResource.col_sub}"/>
+                    <Label  FlexLayout.Basis="45%"  Text="{x:Static lang:StringResource.col_video}"/>
+                    <Label  FlexLayout.Basis="5%" Text="{x:Static lang:StringResource.col_status}"/>
+                </FlexLayout>
+            </ListView.Header>
+            <ListView.ItemTemplate >
+                <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="model:VsItem">
+                    <ViewCell>
+                        <FlexLayout Wrap="Wrap" >
+                            <Label  FlexLayout.Basis="5%"  Text="{Binding MatchKey}"/>
+                            <Label  FlexLayout.Basis="45%" Text="{Binding SubFileInfo.Name}"/>
+                            <Label  FlexLayout.Basis="Auto"  Text="{Binding VideoFileInfo.Name}"/>
+                            <Label  FlexLayout.Basis="5%" Text="{Binding Status}"/>
+                        </FlexLayout>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <VerticalStackLayout Grid.Column="1" x:Name="MainVSL">
+            <Button Text="{x:Static lang:StringResource.btn_open_folder}" Clicked="Open_Folder_Clicked"></Button>
+            <Button Text="{x:Static lang:StringResource.btn_clear}" Clicked="Clear_List_Clicked"></Button>
+            <Button Text="{x:Static lang:StringResource.btn_start}" Clicked="Start_Clicked"></Button>
+        </VerticalStackLayout>
+
+    </Grid>
+
+</ContentPage>
