@@ -121,7 +121,7 @@
     <value>清空列表</value>
   </data>
   <data name="btn_open_folder" xml:space="preserve">
-    <value>导入文件夹</value>
+    <value>选择文件夹</value>
   </data>
   <data name="btn_start" xml:space="preserve">
     <value>开始重命名</value>
